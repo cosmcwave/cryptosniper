@@ -1,12 +1,11 @@
 package signal
 
 import (
-	"context"
 	"cryptosniper/statistic"
 	"sort"
 )
 
-func Volume(ctx context.Context, series *statistic.TimeSeries, threshold float64) (float64, bool) {
+func Volume(series *statistic.TimeSeries, threshold float64) (float64, bool) {
 	var volume []float64
 
 	for _, candle := range *series {
