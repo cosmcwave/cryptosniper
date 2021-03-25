@@ -130,7 +130,7 @@ func (b *Backend) Snipe(ctx context.Context, symbol string) {
 			}
 		}
 
-		if stddev, vol := signal.PriceVolatility(14, series); vol == signal.VeryHighVolatility {
+		if vol, volConstant := signal.PriceVolatility(14, series); volConstant == signal.VeryHighVolatility {
 			cacheVal := b.cachePool["volatility"].Get(symbol)
 			var v int64
 
@@ -142,7 +142,7 @@ func (b *Backend) Snipe(ctx context.Context, symbol string) {
 
 			if v != (*series)[len(*series)-1].Timestamp {
 				b.cachePool["volatility"].Set(symbol, (*series)[len(*series)-1].Timestamp)
-				b.Out.Info().Msgf("%v %v (%f)", symbol, signal.VolatilityToText(vol), stddev)
+				b.Out.Info().Msgf("%v %v (%f)", symbol, signal.VolatilityToText(volConstant), vol)
 			}
 		}
 		b.m.Unlock()
