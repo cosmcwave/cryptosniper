@@ -1,1 +1,1 @@
-#cryptosniper - cryptocurrency statistic(s) sniper
+# cryptosniper - cryptocurrency statistic(s) sniper
