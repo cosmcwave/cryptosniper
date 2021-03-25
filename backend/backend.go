@@ -114,7 +114,7 @@ func (b *Backend) Snipe(ctx context.Context, symbol string) {
 		b.m.Lock()
 
 		volumeThreshold, _ := strconv.ParseFloat(b.extensions["volume_threshold"], 64)
-		if v, ok := signal.Volume(ctx, series, volumeThreshold); ok {
+		if v, ok := signal.Volume(series, volumeThreshold); ok {
 			cacheVal := b.cachePool["volume"].Get(symbol)
 			var t int64
 
