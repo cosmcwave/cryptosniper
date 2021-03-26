@@ -87,7 +87,7 @@ func (b *Backend) AddExtensions(extensions ...string) {
 		e = strings.TrimSpace(e)
 		k, v := extension.Parse(e)
 		b.extensions[k] = v
-		b.Out.Info().Msgf("extension '%v' added with value '%v'", k, v)
+		b.Out.Info().Msgf("extension '%v' set to '%v'", k, v)
 	}
 	fmt.Println("")
 }
@@ -98,7 +98,7 @@ func (b *Backend) Snipe(ctx context.Context, symbol string) {
 	for {
 		select {
 		case <-ctx.Done():
-			b.Out.Info().Msgf("all operations canceled")
+			b.Out.Warn().Msgf("%v sniper shutting down..", symbol)
 			return
 		default:
 		}
@@ -130,7 +130,8 @@ func (b *Backend) Snipe(ctx context.Context, symbol string) {
 			}
 		}
 
-		if vol, volConstant := signal.PriceVolatility(14, series); volConstant == signal.VeryHighVolatility {
+		volatilityThreshold, _ := strconv.ParseFloat(b.extensions["volatility_threshold"], 64)
+		if volatility := signal.PriceVolatility(14, series); volatility > volatilityThreshold {
 			cacheVal := b.cachePool["volatility"].Get(symbol)
 			var v int64
 
@@ -142,11 +143,11 @@ func (b *Backend) Snipe(ctx context.Context, symbol string) {
 
 			if v != (*series)[len(*series)-1].Timestamp {
 				b.cachePool["volatility"].Set(symbol, (*series)[len(*series)-1].Timestamp)
-				b.Out.Info().Msgf("%v %v (%f)", symbol, signal.VolatilityToText(volConstant), vol)
+				b.Out.Info().Msgf("%v high volatility (%f)", symbol, volatility)
 			}
 		}
 		b.m.Unlock()
-		time.Sleep(3 * time.Second)
+		time.Sleep(5 * time.Second)
 	}
 }
 
