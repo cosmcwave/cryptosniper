@@ -113,6 +113,7 @@ func (b *Backend) Snipe(ctx context.Context, symbol string) {
 
 		b.m.Lock()
 
+		var score int
 		volumeThreshold, _ := strconv.ParseFloat(b.extensions["volume_threshold"], 64)
 		if v, ok := signal.Volume(series, volumeThreshold); ok {
 			cacheVal := b.cachePool["volume"].Get(symbol)
@@ -127,11 +128,12 @@ func (b *Backend) Snipe(ctx context.Context, symbol string) {
 			if t != (*series)[len(*series)-1].Timestamp {
 				b.cachePool["volume"].Set(symbol, (*series)[len(*series)-1].Timestamp)
 				b.Out.Info().Msgf("%v high volume (%f)", symbol, math.Abs(1-v)*100)
+				score++
 			}
 		}
 
 		volatilityThreshold, _ := strconv.ParseFloat(b.extensions["volatility_threshold"], 64)
-		if volatility := signal.PriceVolatility(14, series); volatility > volatilityThreshold {
+		if volatility := signal.PriceVolatility(14, series); volatility < volatilityThreshold {
 			cacheVal := b.cachePool["volatility"].Get(symbol)
 			var v int64
 
@@ -144,9 +146,15 @@ func (b *Backend) Snipe(ctx context.Context, symbol string) {
 			if v != (*series)[len(*series)-1].Timestamp {
 				b.cachePool["volatility"].Set(symbol, (*series)[len(*series)-1].Timestamp)
 				b.Out.Info().Msgf("%v high volatility (%f)", symbol, volatility)
+				score++
 			}
 		}
 		b.m.Unlock()
+
+		if score == 2 {
+			b.Out.Warn().Msgf("%v high volume and volatility", symbol)
+		}
+
 		time.Sleep(5 * time.Second)
 	}
 }

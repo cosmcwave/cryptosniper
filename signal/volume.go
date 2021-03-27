@@ -21,7 +21,7 @@ func Volume(series *statistic.TimeSeries, threshold float64) (float64, bool) {
 
 	if volume != nil {
 		q := volume[len(volume)-1] / maVol
-		if (q) > threshold {
+		if q > threshold {
 			return volume[len(volume)-1], true
 		}
 	}
